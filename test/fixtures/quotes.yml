@@ -1,0 +1,11 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  ticker: MyString
+  timestamp: 2024-10-26 19:08:05
+  price: 1
+
+two:
+  ticker: MyString
+  timestamp: 2024-10-26 19:08:05
+  price: 1
