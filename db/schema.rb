@@ -10,15 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2024_10_26_170858) do
-  create_table "fullnames", force: :cascade do |t|
-    t.string "ticker", limit: 4
-    t.string "name"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.index ["ticker"], name: "index_fullnames_on_ticker"
-  end
-
+ActiveRecord::Schema[7.2].define(version: 2024_10_26_170805) do
   create_table "quotes", force: :cascade do |t|
     t.string "ticker", limit: 4
     t.datetime "timestamp"
