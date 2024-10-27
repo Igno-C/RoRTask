@@ -47,8 +47,8 @@ class Mutations::CreateQuote < Mutations::BaseMutation
         }
       end
     end
-    # There is no existing quote to update => create new one
 
+    # There is no existing quote to update => create new one
     new_quote = Quote.new(ticker: ticker.upcase, timestamp: timestamp, price: price)
     if new_quote.save
       {
