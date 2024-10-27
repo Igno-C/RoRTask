@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 class Mutations::CreateQuote < Mutations::BaseMutation
-  #null true
   argument :ticker, String, required: true
   argument :timestamp, GraphQL::Types::ISO8601DateTime, required: true
   argument :price, Int, required: true
@@ -10,10 +9,17 @@ class Mutations::CreateQuote < Mutations::BaseMutation
   field :errors, [String], null: false
 
   def resolve(ticker:, timestamp:, price:)
-    if ticker != ticker.upcase
+    if ticker.length == 0 or ticker.length > 4
       return {
         quote: nil,
-        errors: ["Ticker needs to be uppercase."],
+        errors: ["Ticker must have between 1 and 4 symbols."],
+      }
+    end
+
+    unless ticker.match? /\A[a-zA-Z]*\z/
+      return {
+        quote: nil,
+        errors: ["Ticker may only contain letters."],
       }
     end
 
@@ -24,14 +30,7 @@ class Mutations::CreateQuote < Mutations::BaseMutation
       }
     end
 
-    if ticker.length == 0 or ticker.length > 4
-      return {
-        quote: nil,
-        errors: ["Ticker must have between 1 and 4 symbols."],
-      }
-    end
-    
-    newq = Quote.new(ticker: ticker, timestamp: timestamp, price: price)
+    newq = Quote.new(ticker: ticker.upcase, timestamp: timestamp, price: price)
     if newq.save
       {
         quote: newq,
