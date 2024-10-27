@@ -9,6 +9,7 @@ class Mutations::CreateQuote < Mutations::BaseMutation
   field :errors, [String], null: false
 
   def resolve(ticker:, timestamp:, price:)
+    # Checking if the input data is valid
     if ticker.length == 0 or ticker.length > 4
       return {
         quote: nil,
@@ -29,17 +30,35 @@ class Mutations::CreateQuote < Mutations::BaseMutation
         errors: ["Price cannot be negative."],
       }
     end
+    
+    # Checking if need to update an existing quote
+    existing_quote = Quote.find_by(ticker: ticker.upcase, timestamp: timestamp)
 
-    newq = Quote.new(ticker: ticker.upcase, timestamp: timestamp, price: price)
-    if newq.save
+    if existing_quote
+      if existing_quote.update(price: price)
+        return {
+          quote: existing_quote,
+          errors: []
+        }
+      else
+        return {
+          quote: nil,
+          errors: existing_quote.errors.full_messages
+        }
+      end
+    end
+    # There is no existing quote to update => create new one
+
+    new_quote = Quote.new(ticker: ticker.upcase, timestamp: timestamp, price: price)
+    if new_quote.save
       {
-        quote: newq,
+        quote: new_quote,
         errors: []
       }
     else
       {
         quote: nil,
-        errors: order.errors.full_messages
+        errors: new_quote.errors.full_messages
       }
     end
   end
