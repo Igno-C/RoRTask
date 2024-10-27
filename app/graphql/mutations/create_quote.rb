@@ -10,11 +10,27 @@ class Mutations::CreateQuote < Mutations::BaseMutation
   field :errors, [String], null: false
 
   def resolve(ticker:, timestamp:, price:)
-#    newq = Quote.create(ticker: ticker, timestamp: timestamp, price: price)
-#    {
-#      comment: newq,
-#      errors: [],    
-#    }
+    if ticker != ticker.upcase
+      return {
+        quote: nil,
+        errors: ["Ticker needs to be uppercase."],
+      }
+    end
+
+    if price < 0
+      return {
+        quote: nil,
+        errors: ["Price cannot be negative."],
+      }
+    end
+
+    if ticker.length == 0 or ticker.length > 4
+      return {
+        quote: nil,
+        errors: ["Ticker must have between 1 and 4 symbols."],
+      }
+    end
+    
     newq = Quote.new(ticker: ticker, timestamp: timestamp, price: price)
     if newq.save
       {
