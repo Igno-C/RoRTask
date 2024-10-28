@@ -6,34 +6,32 @@ module Mutations
     RSpec.describe CreateQuote, type: :request do
       describe ".resolve" do
         
-        num_requests = 5
-        tickers = ["TeSt", "ABC", "ab", "ga", "ge"]
+        tickers = ["TeSt", "ABC", "rra", "ga", "ge"]
         timestamp = "2024-10-26T22:00:00Z"
         price = 110
-#        it "works" do
-#post "/graphql", params: {query: make_query(tickers[0], timestamp, price)}
-#        resp = response.body
-#        json = JSON.parse(resp)
-#        puts json
-#        end
                 
-        it "Handles concurrent GraphQL requests" do
+        it "Handles concurrent GraphQL requests to create quotes" do
           expect do
-            futures = []
-            tickers.each do |ticker|
-              puts ticker.upcase
-              future = Concurrent::Future.execute do
-                post "/graphql", params: {query: make_query(ticker, timestamp, price)}
+            tickers.map do |ticker|
+              Thread.new do
+                post "/graphql", params: {query: query(ticker, timestamp, price)}
               end
-              futures << future
-            end
-#            Concurrent::Promise.zip(*futures).wait # Waiting for the futures to end
-            sleep(10) # Waiting some more for the requests to be handled
-          end.to change {Quote.count}.by(num_requests)
+            end.each(&:join)
+          end.to change {Quote.count}.by(tickers.length)
+        end
+
+        it "Handles concurrent GraphQL requests to modify quotes" do
+          expect do
+            5.times.map do |i|
+              Thread.new do
+                post "/graphql", params: {query: query("ABC", timestamp, price+1)}
+              end
+            end.each(&:join)
+          end.to change {Quote.count}.by(1)
         end
       end
 
-      def make_query(tic, tim, pri)
+      def query(tic, tim, pri)
         <<~EOF
           mutation {
             createQuote(input:{
